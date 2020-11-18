@@ -1,0 +1,552 @@
+/*  C++ program to find out maximum profit by buying and selling a share atmost k times given stock price of n days.  */
+
+#include <iostream>
+#include <fstream>
+#include <climits>
+#include <stack>
+#include <time.h>
+using namespace std;
+
+class traderAccount
+{
+    private :
+
+	string name;
+	int age;
+	string ID;
+	string password;
+	int perm;
+	float balance;
+
+	public :
+
+    traderAccount()
+    {
+        perm = 0;
+        balance = 2500.00;
+    }
+
+    void updateBalance(float bal)
+    {
+     	balance += bal;
+    }
+
+	void accountHolder()
+	{
+        cout << "Enter name : ";
+		cin >> name;
+
+		cout << "Enter age : ";
+		cin >> age;
+
+		cout << "User id : ";
+		cin >> ID;
+
+		cout << "Enter password : ";
+		cin >> password;
+	}
+
+	int getAge()
+	{
+		return age;
+	}
+
+	string getID()
+	{
+		return ID;
+	}
+
+	void setPassword()
+	{
+		cout << "Entet new password : ";
+		cin >> password;
+	}
+
+	string getPassword()
+	{
+		return password;
+	}
+
+	float getBalance()
+	{
+	    return balance;
+	}
+
+	string getName()
+	{
+		return name;
+	}
+
+	int getPer()
+	{
+		return perm;
+	}
+
+    void permitted()
+    {
+	    perm = 1;
+    }
+};
+
+void productPriceListGenerator(float price[], int n, traderAccount &c1)
+{
+    int w;
+	srand((unsigned) time(0));
+    float randomNumber;
+
+    cout << "\n 1. DEBT CORPORATE BONDS(1050-1705)" << endl;
+    cout << " 2. GOLD:Gold ETFs(7050-8028)" << endl;
+    cout << " 3. INFRASTRUCTURE INVESTMENT TRUSTS(INVIT)(3809-4906)" << endl;
+    cout << " 4. DABUR INDIA(5106-7000)" << endl;
+    cout << " 5. ORIENT ELECTRIC(2104-3078)" << endl;
+    cout << " 6. GILLETE INDIA(3400-4500)" << endl;
+    cout << " 7. VIP INDUSTRIES(3070-3578)" << endl;
+    cout << " 8. COLGATE(1513-3508)" << endl;
+    cout << " 9. MARICO(370-508)" << endl;
+    cout << "10. GODREJ CONSUMER(685-708)" << endl;
+    cout << "11. BAJAJ CONSUMERS(182-250)" << endl;
+
+    int p, N;
+    float temp1, temp2;
+
+    do
+    {
+        cout << "\nSelect product : ";
+        cin >> w;
+
+        switch(w)
+        {
+            case 1:
+            p = 1050;
+            N = 655;
+            break;
+
+            case 2:
+            p = 7050;
+            N = 978;
+            break;
+
+            case 3:
+            p = 3809;
+            N = 1097;
+            break;
+
+            case 4:
+            p = 5106;
+            N = 1894;
+            break;
+
+  	        case 5:
+            p = 2104;
+            N = 974;
+            break;
+
+            case 6:
+            p = 3400;
+            N = 1100;
+            break;
+
+            case 7:
+            p = 3070;
+            N = 505;
+            break;
+
+            case 8:
+            p = 1513;
+            N = 1995;
+            break;
+
+  	        case 9:
+            p = 370;
+            N = 138;
+            break;
+
+  	        case 10:
+            p = 685;
+            N = 23;
+            break;
+
+            case 11:
+            p = 182;
+            N = 68;
+            break;
+        }
+
+        temp2 = c1.getBalance();
+        temp1 = p+N;
+
+        if(temp1 > temp2)
+        {
+            cout << "Insufficient balance for this product please select product under " << temp2 << endl;
+        }
+    }
+    while(temp1 > temp2);
+
+    for(int index = 0; index < n; index++)
+    {
+        randomNumber = (p+rand() % N);
+	    price[index] = randomNumber;
+    }
+}
+
+void LCG(int Z, int a, int m, int c, float randArray[], int l)
+{
+    int i=0;
+    float ui;
+    cout << "Product gain/loss in different days :- " << endl;
+
+    for(i=1; i<=l; i++)
+	{
+		Z = (a*Z+c) % m;
+    	ui = float(Z)/float(m);
+
+    	if(i%2==0 || i%7==0 || i%13==0)
+    	{
+    		randArray[i-1] -= ui*15.9763;
+    	    cout << "Day " << i << " :  -" << ui*15.9763;
+    	}
+    	else
+        {
+            randArray[i-1] += ui*157.9763;
+            cout << "Day " << i << " :  " << ui*157.9763;
+        }
+        cout << endl;
+	}
+}
+
+/*
+Stock span is defined as a number of consecutive days prior to the current day when the price of a stock was less than or equal to the price at current day.
+*/
+void stockSpan(float price[], int size)
+{
+    int *arr = new int[size];
+    stack<int> s1;
+
+    int count = 1;
+    arr[0] = 1;
+    s1.push(0);
+
+    for(int i=1; i<size; i++)
+    {
+        while(s1.size() != 0 && price[s1.top()] < price[i])
+        {
+            s1.pop();
+        }
+
+        if(s1.size() == 0)
+        {
+            count = i+1;
+        }
+        else if(price[s1.top()] >= price[i])
+        {
+            count = i - s1.top();
+        }
+
+        s1.push(i);
+        arr[i] = count;
+    }
+
+    for(int i=0; i<size; i++)
+    {
+        price[i]=arr[i];
+    }
+}
+
+
+/*  Function to find out maximum profit by buying & selling a share atmost k times given stock price of n days  */
+
+float Profit(float price[], int n, int k)
+{
+    // table to store results of subproblems profit[t][i] stores maximum
+    //profit using almost t transactions up to day i (including day i)
+    float profit[k + 1][n + 1];
+
+    // For day 0, you can't earn money irrespective of how many times
+    //you trade
+    for(int i = 0; i <= k; i++)
+    {
+        profit[i][0] = 0;
+    }
+
+    // profit is 0 if we don't do any transaction (i.e. k =0)
+    for(int j = 0; j <= n; j++)
+    {
+        profit[0][j] = 0;
+    }
+
+    // fill the table in bottom-up fashion
+    for(int i = 1; i <= k; i++)
+    {
+        for(int j = 1; j < n; j++)
+        {
+            float max_so_far = INT_MIN;
+            for(int m = 0; m < j; m++)
+            {
+                max_so_far = max(max_so_far, price[j] - price[m] + profit[i - 1][m]);
+            }
+
+            profit[i][j] = max(profit[i][j - 1],max_so_far);
+        }
+    }
+
+    return profit[k][n - 1];
+}
+
+void insert()
+{
+    traderAccount c;
+    c.accountHolder();
+    ofstream w("detail.dat",ios::binary|ios::app);
+
+    if(!w)
+    {
+        cout << "could not open file";
+        exit(0);
+    }
+
+    w.write((char*)&c,sizeof(c));
+    w.close();
+}
+
+traderAccount& get()
+{
+    string id, p;
+    cout << "Enter ID : ";
+    cin >> id;
+    cout << "Enter password : ";
+    cin >> p;
+
+	traderAccount *c = new traderAccount();
+    ifstream r("detail.dat",ios::binary|ios::in);
+
+    while(r.read((char*)&(*c),sizeof(*c)))
+    {
+        if(id==c->getID()&&p==c->getPassword())
+        {
+            c->permitted();
+            break;
+        }
+    }
+
+    r.close();
+	return *c;
+}
+
+void update(traderAccount c1, float bal)
+{
+    traderAccount c;
+    ofstream w("temp.dat",ios::binary);
+    ifstream r("detail.dat",ios::binary|ios::in);
+
+    while(r.read((char*)&c,sizeof(c)))
+    {
+        if(c1.getName()==c.getName() && c1.getPassword()==c.getPassword() && c1.getID()==c.getID())
+        {
+            c.updateBalance(bal);
+        }
+	    w.write((char*)&c,sizeof(c));
+    }
+
+    w.close();
+    r.close();
+    remove("detail.dat");
+    rename("temp.dat","detail.dat");
+}
+
+void forgotPassword(traderAccount c1)
+{
+	traderAccount c;
+	string n, id;
+	int age;
+	cout << "Enter name : ";
+	cin >> n;
+	cout << "Enter age : ";
+	cin >> age;
+	cout << "Enter ID : ";
+	cin >> id;
+
+	ofstream w("temp.dat",ios::binary);
+    ifstream r("detail.dat",ios::binary|ios::in);
+
+    while(r.read((char*)&c,sizeof(c)))
+    {
+        if(c.getName()==c1.getName()&&c.getAge()==c1.getAge()&&c.getID()==c1.getID())
+ 	    {
+            c.setPassword();
+        }
+        w.write((char*)&c,sizeof(c));
+    }
+
+    w.close();
+    r.close();
+    remove("detail.dat");
+    rename("temp.dat","detail.dat");
+}
+
+void show()
+{
+	traderAccount c;
+    ifstream r("detail.dat",ios::binary|ios::in);
+
+    if(!r)
+    {
+        cout << "File could not open!!!!"<<endl;
+    }
+    else
+    {
+        while(r.read((char*)&c,sizeof(c)))
+        {
+            cout << "Name : " << c.getName() << endl;
+	        cout << "User ID : " << c.getID() << endl;
+            cout << "Balance : " << c.getBalance() << endl;
+	        cout << endl;
+        }
+    }
+	r.close();
+}
+
+void deleteAccount()
+{
+	traderAccount c;
+	string id;
+	string p;
+	cout << "Enter user id : ";
+	cin >> id;
+
+	cout << "Enter password : ";
+	cin >> p;
+
+    ifstream r("detail.dat",ios::binary|ios::in);
+    ofstream w("temp.dat",ios::binary|ios::app);
+
+    while(r.read((char*)&c,sizeof(c)))
+    {
+        if(c.getID()==id && c.getPassword()==p)
+        {
+            cout << "account deleted" << endl;
+		}
+	    else
+        {
+            w.write((char*)&c,sizeof(c));
+        }
+    }
+
+    w.close();
+    r.close();
+    remove("detail.dat");
+    rename("temp.dat","detail.dat");
+}
+
+// Driver code
+int main()
+{
+    cout << "Welcome to trading world !!" << endl;
+    cout << endl;
+
+    char yes;
+    traderAccount c1;
+
+    do
+    {
+        cout << "Do you want to Add an account(y/n) : ";
+ 	    cin >> yes;
+
+ 	    if(yes == 'y')
+        {
+            insert();
+        }
+        cout << endl;
+    }
+    while(yes == 'y');
+
+    traderAccount temp;
+    temp = get();
+
+    int x = temp.getPer();
+    if(x)
+    {
+        cout << "~ Successfully Logged In ~" << endl;
+ 	    cout << "Hello " << temp.getName() << endl;
+        cout << "Your left balance is : " << temp.getBalance() << endl;
+
+        cout << endl << "\n  ****************************    " << endl << endl;
+
+        int n, k;
+        cout << "\nEnter Number of days : ";
+        cin >> n;
+
+        float* price = new float[n];
+        productPriceListGenerator(price, n, temp);
+
+        cout << "\nPrice list initially :- " << endl;
+        for(int i=0; i<n; i++)
+        {
+            cout << price[i] << endl;
+        }
+        cout << endl;
+
+        LCG(13, 3, 32, 7, price, n);   //library routines
+        cout << endl;
+
+        cout << "Final price list :- " << endl;
+        for(int i=0; i<n; i++)
+        {
+            cout << price[i] << endl;
+        }
+        cout << endl;
+
+        cout << "Enter k(buys and sells one can do) : ";
+        cin >> k;
+
+        cout << "\nMaximum profit is : ";
+        float profitEarned = Profit(price, n, k);
+        cout << profitEarned << endl;
+
+        update(temp, profitEarned);
+
+        stockSpan(price, n);
+        cout << endl;
+        cout << "Stock span of generated final list is :- " << endl;
+        for(int i=0; i<n; i++)
+        {
+            cout << price[i] << " ";
+        }
+        cout << endl;
+    }
+    else
+    {
+        char select;
+        cout << "Forgot Your password?(y/n) : ";
+ 	    cin >> select;
+
+ 	    if(select == 'y')
+ 	    {
+            forgotPassword(temp);
+        }
+    }
+
+    cout << endl << "\n  ****************************    " << endl << endl;
+
+    char select;
+    cout << "\nShow your all accounts?(y/n) : ";
+    cin >> select;
+
+    if(select == 'y')
+    {
+        show();
+    }
+
+    cout << "Delete Account?(y/n) : ";
+    cin >> select;
+
+    if(select == 'y')
+    {
+        deleteAccount();
+
+        cout << "\nRemaining Accounts :-" << endl;
+        show();
+    }
+    cout << endl << endl;
+
+    return 0;
+}
